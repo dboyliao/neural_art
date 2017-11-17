@@ -100,9 +100,9 @@ if __name__ == "__main__":
     # hyper parameters
     parser.add_argument("--content-layer", dest="content_layer",
                         default="conv4_2/Relu",
-                        help="layer for content loss")
+                        help="layer for content loss (default: %(default)s)")
     parser.add_argument("--style-layers", dest="style_layers",
-                        help="style layer names, seperated by ',' (defaults: %(default)s)",
+                        help="style layer names, seperated by ',' (default: %(default)s)",
                         default="conv1_1/Relu,conv2_1/Relu, conv3_1/Relu,conv4_1/Relu,conv5_1/Relu",
                         type=_list_arg())
     parser.add_argument("--style-weights", dest="style_weights",
