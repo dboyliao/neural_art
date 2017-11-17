@@ -18,7 +18,8 @@ def main(alpha, beta,
          style_image,
          num_iteration,
          log_every_step,
-         output_name):
+         output_name,
+         save_path):
     """main function
     """
     assert len(style_layers) == len(style_weights), \
@@ -41,16 +42,17 @@ def main(alpha, beta,
 
     content_image = read_image(content_image, (224, 224), "RGB")
     style_image = read_image(style_image, (224, 224), "RGB")
-
+    print("alph:", alpha)
+    print("beta:", beta)
     try:
         with tf.Session(graph=artist_net) as sess:
             tf.global_variables_initializer().run()
             print("All variables inititialized")
             feed_dict = {tf_content_image: content_image[None,:],
                          tf_style_image: style_image[None,:]}
-            tl, cl, sl, tvl, alpha_, beta_ = sess.run([loss, loss_content,
-                                                       loss_style, loss_tv], 
-                                                       feed_dict=feed_dict)
+            tl, cl, sl, tvl = sess.run([loss, loss_content,
+                                       loss_style, loss_tv],
+                                       feed_dict=feed_dict)
             print("Initial losses:", tl)
             print("  Content loss:", cl)
             print("  Style loss:", sl)
@@ -58,11 +60,11 @@ def main(alpha, beta,
             durations = []
             for step in range(1, num_iteration + 1):
                 start_time = time.time()
-                l, cl, sl, tvl, _ = sess.run([loss, loss_content, loss_style, 
-                                              loss_tv, train_op], 
-                                              feed_dict=feed_dict)
+                l, cl, sl, tvl, _ = sess.run([loss, loss_content, loss_style,
+                                             loss_tv, train_op],
+                                             feed_dict=feed_dict)
                 end_time = time.time()
-                durations.append(end_time-start_time)
+                durations.append(end_time - start_time)
                 if step % log_every_step == 0:
                     print("step:", step)
                     print("totol loss:", l)
@@ -77,6 +79,8 @@ def main(alpha, beta,
                     durations = []
 
             out_image = tf_output_image.eval()[0]
+            print("fitting done")
+            saver.save(sess, save_path, step)
         # saving image
         out_image = np.clip(out_image, 0, 255).astype(np.uint8)
         Image.fromarray(out_image).resize((512, 512)).save(output_name)
@@ -103,7 +107,7 @@ if __name__ == "__main__":
                         help="layer for content loss (default: %(default)s)")
     parser.add_argument("--style-layers", dest="style_layers",
                         help="style layer names, seperated by ',' (default: %(default)s)",
-                        default="conv1_1/Relu,conv2_1/Relu, conv3_1/Relu,conv4_1/Relu,conv5_1/Relu",
+                        default="conv1_1/Relu,conv2_1/Relu,conv3_1/Relu,conv4_1/Relu,conv5_1/Relu",
                         type=_list_arg())
     parser.add_argument("--style-weights", dest="style_weights",
                         help="style weights, seperated by ',' (defaults: %(default)s)",
@@ -119,7 +123,8 @@ if __name__ == "__main__":
                         dest="use_smooth_tv",
                         help="use smoothed version TV loss")
     parser.add_argument("--save-path", dest="save_path",
-                        help="session save path")
+                        default="chkp/nn_art",
+                        help="session save path (default: %(default)s)")
     # training parameters
     parser.add_argument("--vgg-path", dest="vgg_path",
                         help="path of the pb file of vgg net (default: %(default)s)",

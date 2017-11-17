@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf8 -*-
+from functools import reduce
 from PIL import Image
 import tensorflow as tf
-from functools import reduce
+import numpy as np
 
 
 def load_graph_pb(path, graph=None):
@@ -14,7 +15,7 @@ def load_graph_pb(path, graph=None):
     if graph is None:
         graph = tf.get_default_graph()
     graph_def = tf.GraphDef()
-    with tf.gfile.FastGFile(path) as fid:
+    with tf.gfile.FastGFile(path, 'rb') as fid:
         graph_def.ParseFromString(fid.read())
 
     with graph.as_default():
