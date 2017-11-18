@@ -7,3 +7,5 @@
 3. enjoy!
 
 run `python3 main.py -h` for help
+
+![nn-art](images/nn_art.png)
